@@ -33,12 +33,3 @@ public class MazeGenerator : MonoBehaviour
          }
     }
 }
-
-
-
-
-
-
-// watch this video for the rest of the programming
-// https://www.youtube.com/watch?v=OutlTTOm17M 
-// min 10:15
