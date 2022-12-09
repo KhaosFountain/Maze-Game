@@ -50,6 +50,7 @@ public class MoveToGoal : Agent{
         else if (other.TryGetComponent<Wall>(out Wall wall)){
             SetReward(-10f);
             transform.position = new Vector3(0, 2, 0);
+            
         }
     }
 
