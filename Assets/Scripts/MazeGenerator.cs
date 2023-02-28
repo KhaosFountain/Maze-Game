@@ -130,7 +130,8 @@ public class MazeGenerator : MonoBehaviour
                  currentPath.RemoveAt(currentPath.Count-1);
              }
 
-            //   yield return new WaitForSeconds(1f);
+                // use this for demo purposes only to show the random map generation with colour
+               //yield return new WaitForSeconds(.05f);
          }
     }
 }
