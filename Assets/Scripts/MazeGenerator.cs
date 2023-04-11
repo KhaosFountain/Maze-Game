@@ -12,17 +12,27 @@ public class MazeGenerator : MonoBehaviour
 
     [SerializeField] float nodeSize;
 
-// for random number
+            //list of all the nodes created.
+        private List<MazeMap> nodes = new List<MazeMap>();
+    
 
 
     //mainb method of the maze generatod...we will have vibratnt colours so we can see it better.
+    
     private void Start(){
         StartCoroutine(GenerateMaze(mazeSize));
     }
 
+    // private void Update(){ 
+    //     if(Input.GetKeyDown(KeyCode.R)){
+    //         GenerateMaze(mazeSize);
+    //         Debug.Log("Reload");
+    //     }
+    // }
+
     IEnumerator GenerateMaze(Vector2Int size){
-         //list of all the nodes created.
-         List<MazeMap> nodes = new List<MazeMap>(); 
+ 
+
 
          //creating nodes.
          // 2 for loops one for the x axis and one for the y axis.

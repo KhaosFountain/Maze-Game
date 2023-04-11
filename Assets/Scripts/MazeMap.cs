@@ -14,6 +14,7 @@ public class MazeMap : MonoBehaviour
     [SerializeField] GameObject[] walls;
     [SerializeField] MeshRenderer floor;
 
+
     public void RemoveWall(int wallToRemove){
         walls[wallToRemove].gameObject.SetActive(false);
     }
@@ -23,13 +24,13 @@ public class MazeMap : MonoBehaviour
         switch (state)
         {
             case NodeState.Available:
-                floor.material.color = Color.white;
+                floor.material.color = Color.red;
                 break;
             case NodeState.Current:
                 floor.material.color = new Color(255, 230, 0);
                 break;
             case NodeState.Completed:
-                floor.material.color = new Color(255, 255, 255);
+                floor.material.color = Color.white;
                 break;
         }
     }
