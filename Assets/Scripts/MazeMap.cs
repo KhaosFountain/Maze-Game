@@ -13,6 +13,7 @@ public class MazeMap : MonoBehaviour
 {
     [SerializeField] GameObject[] walls;
     [SerializeField] MeshRenderer floor;
+    [SerializeField] private Material compNode;
 
 
     public void RemoveWall(int wallToRemove){
@@ -30,7 +31,7 @@ public class MazeMap : MonoBehaviour
                 floor.material.color = new Color(255, 230, 0);
                 break;
             case NodeState.Completed:
-                floor.material.color = Color.white;
+                floor.material=compNode;
                 break;
         }
     }

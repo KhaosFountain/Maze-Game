@@ -6,7 +6,7 @@ public class FirstPersonMovement : MonoBehaviour
 {
     public CharacterController controller;
 
-    public float speed = 6f;
+    public float speed;
     public float gravity = -9.81f;
 
     public Transform ground;
@@ -24,7 +24,7 @@ public class FirstPersonMovement : MonoBehaviour
         isGround = Physics.CheckSphere(ground.position, groundDistance, groundMask);
 
         if(isGround && velocity.y < 0){
-            velocity.y = -2f;
+            velocity.y = -1f;
         }
 
         float horizontal = Input.GetAxisRaw("Horizontal");

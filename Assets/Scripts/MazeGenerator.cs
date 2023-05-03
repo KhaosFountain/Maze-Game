@@ -12,24 +12,30 @@ public class MazeGenerator : MonoBehaviour
 
     [SerializeField] float nodeSize;
 
-            //list of all the nodes created.
-        private List<MazeMap> nodes = new List<MazeMap>();
-    
+    [SerializeField] public GameObject player;
+    [SerializeField] public GameObject target;
+    [SerializeField] public GameObject flag;
+    public GameObject gameCamera;
+
+    private float minX = -45f;
+    private float maxX = 25f;
+    private float minZ = -44f;
+    private float maxZ = 24f;
+
+    //list of all the nodes created.
+    private List<MazeMap> nodes = new List<MazeMap>();
+    public List<MazeMap> CompNodes = new List<MazeMap>();
+
+
 
 
     //mainb method of the maze generatod...we will have vibratnt colours so we can see it better.
-    
+
     private void Start(){
         StartCoroutine(GenerateMaze(mazeSize));
     }
 
-    // private void Update(){ 
-    //     if(Input.GetKeyDown(KeyCode.R)){
-    //         GenerateMaze(mazeSize);
-    //         Debug.Log("Reload");
-    //     }
-    // }
-
+    [System.Obsolete]
     IEnumerator GenerateMaze(Vector2Int size){
  
 
@@ -52,9 +58,9 @@ public class MazeGenerator : MonoBehaviour
          List<MazeMap> currentPath = new List<MazeMap>();
          List<MazeMap> completedNodes = new List<MazeMap>();
 
-        // chosing starting node
+        
         Random.seed = System.DateTime.Now.Millisecond;
-        // i needed to add the line above to get the random number funcion working.
+
          currentPath.Add(nodes[Random.Range(0, nodes.Count)]);
          currentPath[0].SetState(NodeState.Current);
 
@@ -69,10 +75,9 @@ public class MazeGenerator : MonoBehaviour
              int currentNodeX = currentNodeIndex / size.y;
              int currentNodeY = currentNodeIndex % size.y;
 
+            
+
              if(currentNodeX < size.x - 1){
-                 /* checking the nodes right to the current node are either in the completed nodes path or in the node path
-                 // if its not in either then it can continue into the if statement
-                 //  we are also checking if the current node is near the edge right wall */
                  if(!completedNodes.Contains(nodes[currentNodeIndex + size.y]) && !currentPath.Contains(nodes[currentNodeIndex + size.y])){
                      // telling the current node what direction it can move in
 
@@ -135,13 +140,18 @@ public class MazeGenerator : MonoBehaviour
              }
              else{
                  completedNodes.Add(currentPath[currentPath.Count-1]);
+                CompNodes.Add(currentPath[currentPath.Count-1]);
 
                  currentPath[currentPath.Count-1].SetState(NodeState.Completed);
                  currentPath.RemoveAt(currentPath.Count-1);
              }
 
                 // use this for demo purposes only to show the random map generation with colour
-               //yield return new WaitForSeconds(.05f);
+               //yield return new WaitForSeconds(2f);
+
          }
+         player.transform.localPosition = new Vector2(1, 1);
+         player.transform.localRotation = Quaternion.Euler(0, 0, 0);
+        flag.transform.localPosition = new Vector3(Random.Range(maxX, minX), 1, Random.Range(maxZ, minZ));
     }
 }

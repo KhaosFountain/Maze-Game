@@ -4,15 +4,33 @@ using UnityEngine;
 
 public class Goal : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+
+    private bool playerReachedGoal = false;
+    private bool agentReachedGoal = false;
+
+    void OnCollisionEnter(Collision collision)
     {
-        
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            playerReachedGoal = true;
+            CheckWinner();
+        }
+        else if (collision.gameObject.CompareTag("Enemy"))
+        {
+            agentReachedGoal = true;
+            CheckWinner();
+        }
     }
 
-    // Update is called once per frame
-    void Update()
+    void CheckWinner()
     {
-        
+        if (playerReachedGoal)
+        {
+            Debug.Log("Player Wins!");
+        }
+        else if (agentReachedGoal)
+        {
+            Debug.Log("Agent Wins!");
+        }
     }
 }

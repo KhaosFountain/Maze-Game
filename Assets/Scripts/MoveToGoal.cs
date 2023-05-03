@@ -4,76 +4,134 @@ using UnityEngine;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
+using TMPro;
 using Unity.Barracuda;
-
-
-/*agent learns through reinforcement learning which involves some steps
-   1. Observatoin
-       - gathers data from its enviornment
-   2. Decision
-       - after it gathers information it makes a decision based on that data.
-   3. Action
-       - based on the decision it takes a action
-   4. Reward
-       - if the action is correct the agent gets a reward...if the action is incorrect then no reward.
-  
-*/
-
-
 
 public class MoveToGoal : Agent
 {
-    public float Movespeed = 10;
+    public float Movespeed;
     private Vector3 orig;
     private GameObject Target = null;
 
-    private float degreePerSecond = 4;
-    private bool rotate = true;
+    private int stepsTaken;
+    private float prevDistanceToGoal;
 
     [SerializeField] private Material winMaterial;
     [SerializeField] private Material loseMaterial;
     [SerializeField] private MeshRenderer floorMeshRenderer;
+    [SerializeField] private LayerMask wallMask;
+    [SerializeField] private float rayDistance = 10f;
+
+    private float minX = -22f;
+    private float maxX = 22f;
+    private float minZ = -22f;
+    private float maxZ = 22f;
+
+    public RayPerceptionSensorComponent3D rayPerceptionSensor;
+    public float cellSize = 1.0f;
+
+    private Queue<Vector2Int> recentVisitedStates = new Queue<Vector2Int>();
+    public int maxRecentVisitedStates = 5;
+
 
     public override void Initialize()
-    { 
+    {
         orig = new Vector3(this.transform.position.x, this.transform.position.y, this.transform.position.z);
         Target = this.transform.parent.transform.Find("Goal").gameObject;
-        
     }
 
     public override void OnEpisodeBegin()
     {
-        transform.localPosition = new Vector3(Random.Range(25f, -45f), 0, Random.Range(-44f, 24f));
-        Target.transform.localPosition = new Vector3(Random.Range(25f, -45f), 0, Random.Range(-44f, 24f));
+        stepsTaken = 0;
+        this.transform.localPosition = new Vector3(Random.Range(minX, maxX), 0, Random.Range(minZ, maxZ));
+        Target.transform.localPosition = new Vector3(Random.Range(minX, maxX), 0, Random.Range(minZ, maxZ));
+        prevDistanceToGoal = Vector3.Distance(transform.localPosition, Target.transform.localPosition);
+    }
+
+    public override void Heuristic(in ActionBuffers actionsOut)
+    {
+        ActionSegment<float> continuousActions = actionsOut.ContinuousActions;
+        continuousActions[0] = Input.GetAxisRaw("Horizontal");
+        continuousActions[1] = Input.GetAxisRaw("Vertical");
+    }
+
+    public override void CollectObservations(VectorSensor sensor)
+    {
+        sensor.AddObservation(transform.localPosition);
+        sensor.AddObservation(Target.transform.localPosition);
 
     }
+
+
     public override void OnActionReceived(ActionBuffers vectorAction)
     {
-
         float moveX = vectorAction.ContinuousActions[0];
         float moveZ = vectorAction.ContinuousActions[1];
+        Target = this.transform.parent.transform.Find("Goal").gameObject;
 
-        transform.localPosition += new Vector3(moveX, 0, moveZ) * Time.deltaTime * Movespeed;
+        float currentDistanceToGoal = Vector3.Distance(transform.localPosition, Target.transform.localPosition);
 
+        Vector3 moveDirection = new Vector3(moveX, 0, moveZ).normalized;
+        Vector3 newPosition = transform.position + moveDirection * Time.deltaTime * Movespeed;
+        AddReward(-0.001f);
 
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, moveDirection, out hit, rayDistance, wallMask))
+        {
+            if (hit.distance <= 0.5f)
+            {
+                AddReward(+0.1f);
+                return;
+            }
+        }
+
+        transform.position = newPosition;
+
+        Vector2Int currentState = GetDiscretePosition(transform.localPosition);
+        if (recentVisitedStates.Contains(currentState))
+        {
+            AddReward(-0.2f);
+        }
+
+        // Update the recent visited states queue
+        recentVisitedStates.Enqueue(currentState);
+        if (recentVisitedStates.Count > maxRecentVisitedStates)
+        {
+            recentVisitedStates.Dequeue();
+        }
+
+        float newDistanceToGoal = Vector3.Distance(transform.localPosition, Target.transform.localPosition);
+        float distanceReward = (prevDistanceToGoal - newDistanceToGoal) * 0.1f;
+        AddReward(distanceReward);
+
+        prevDistanceToGoal = newDistanceToGoal;
+        stepsTaken++;
     }
-    
-        void OnCollisionEnter(Collision col){
-        if(col.gameObject.CompareTag("Goal") ){
-            SetReward(+10f);
+
+    private Vector2Int GetDiscretePosition(Vector3 position)
+    {
+        int x = Mathf.FloorToInt(position.x / cellSize);
+        int z = Mathf.FloorToInt(position.z / cellSize);
+        return new Vector2Int(x, z);
+    }
+
+
+
+    void OnCollisionEnter(Collision col)
+    {
+        if (col.gameObject.CompareTag("Goal"))
+        {
+            float reward = 5f ;
+            SetReward(reward);
             Debug.Log("Hit Goal");
             floorMeshRenderer.material = winMaterial;
             EndEpisode();
         }
-        else if (col.gameObject.CompareTag("Wall")){
-            SetReward(-50f);
+        else if (col.gameObject.CompareTag("Wall"))
+        {
+            SetReward(-6f);
             Debug.Log("Hit Wall");
             floorMeshRenderer.material = loseMaterial;
-            EndEpisode();
         }
-
     }
 }
-
-
-
